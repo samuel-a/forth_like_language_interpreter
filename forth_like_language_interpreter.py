@@ -7,7 +7,7 @@
 
 
 class Token:
-    def __init__(self, type, value, body=[], flags=''):
+    def __init__(self, value, type="", body=[], flags=''):
         self.type = type
         self.value = value
         self.flags = flags
@@ -28,28 +28,28 @@ class Lexer:
         self.index = 0
         self.current_char = self.text[self.index]
         self.operands = { # used to keep track for documentation purposes, not necessarily ever referenced
-            '+' : Token('Plus', '+'),
-            '-' : Token('Minus', '-'), #TODO more primites (especially stack ones)
-            '*' : Token('Multiply', '*'),
-            '/' : Token('Divide', '/'),
-            'print' : Token('Print', 'print'),
-            'branch' : Token('Branch', 'branch'),
-            'branch?' : Token('Branch?', 'branch'),
-            ':' : Token('Compile-flag', ':'),
-            ';' : Token('Execute-flag', ';'),
-            '(' : Token('Comment', '('),
-            'swap' : Token('Swap', 'swap'),
-            'dup' : Token('Dup', 'dup'),
-            'rot' : Token('Rot', 'rot'),
-            'drop' : Token('Drop', 'drop'),
-            'over' : Token('Over', 'over'),
-            'mod' : Token('Mod', 'mod')
+            '+' : Token('+'),
+            '-' : Token('-'), #TODO more primites (especially stack ones)
+            '*' : Token('*'),
+            '/' : Token('/'),
+            'print' : Token('print'),
+            'branch' : Token('branch'),
+            'branch?' : Token('branch?'),
+            ':' : Token(':'),
+            ';' : Token(';'),
+            '(' : Token('('),
+            'swap' : Token('swap'),
+            'dup' : Token('dup'),
+            'rot' : Token('rot'),
+            'drop' : Token('drop'),
+            'over' : Token('over'),
+            'mod' : Token('mod')
         }
 
         self.tokenized_text = []
 
-    def advance(self, word_length=1): #TODO: take length of command word as optional argument
-        self.index += word_length
+    def advance(self):
+        self.index += 1
         if self.index > len(self.text) - 1:
             self.current_char = None  # Indicates end of input
         else:
@@ -62,14 +62,6 @@ class Lexer:
     def error(self):
         raise Exception('Syntax Error')
 
-    def integer(self):
-        """ return a multidigit integer from input text """
-        result = ''
-        while self.current_char is not None and self.current_char.isdigit():
-            result += self.current_char
-            self.advance()
-        return int(result)
-
     def next_token(self):
         """ Get the next token from the input text and push it onto the tokenized input """
 
@@ -79,86 +71,30 @@ class Lexer:
                 self.jump_whitespace()
                 continue
 
-            if self.current_char.isdigit():
-                return Token('Integer', self.integer())
-
-            if self.current_char == ':' :
-                self.advance()
-                self.execute_mode = False
-                self.compile_mode = True
-
-
-            
-            if self.current_char == '+':
-                self.advance()
-                return Token('Plus', '+')
-
-            if self.current_char == '-':
-                self.advance()
-                return Token('Minus', '-')
-
-            if self.current_char == '*':
-                self.advance()
-                return Token('Multiply', '*')
-
-            if self.current_char == '/':
-                self.advance()
-                return Token('Divide', '/')
+            value = ""
 
             if self.current_char == '(':
+                while not self.current_char == ')':
+                    value += self.current_char
+                    self.advance()
                 self.advance()
-                comment_body = ""
+                return Token(value + ')', 'Comment')
 
-                idx = 0
-                while self.text[self.index+idx] != ')':
-                    comment_body += self.text[self.index+idx]
-                    idx += 1
-                
-                self.advance(idx+1)
-                return Token('Comment', comment_body)
-
-  
-            # whole word commands
-            if 'print' in self.text[self.index : self.index+5]:
-                self.advance(5)
-                return Token('Print', 'print')
-
-            if 'branch?' == self.text[self.index : self.index+7]:
-                self.advance(7)
-                return Token('Branch?', 'branch?')
-
-            if 'branch' == self.text[self.index : self.index+6]:
-                self.advance(6)
-                return Token('Branch', 'branch')
-
-            if 'swap' == self.text[self.index : self.index+4]:
-                self.advance(4)
-                return Token('Swap', 'swap')
+            print(self.current_char)
             
-            if 'over' == self.text[self.index : self.index+4]:
-                self.advance(4)
-                return Token('Over', 'over')
-
-            if 'drop' == self.text[self.index : self.index+4]:
-                self.advance(4)
-                return Token('Drop', 'drop')
-
-            if 'rot' == self.text[self.index : self.index+3]:
-                self.advance(3)
-                return Token('Rot', 'rot')
+            while self.current_char is not None and not self.current_char.isspace():
+                value += self.current_char
+                self.advance()
             
-            if 'dup' == self.text[self.index : self.index+3]:
-                self.advance(3)
-                return Token('Dup', 'dup')
-
-            if 'mod' == self.text[self.index : self.index+3]:
-                self.advance(3)
-                return Token('Mod', 'mod')
+            if value[0].isdigit():
+                return Token(int(value), 'Integer')
+            else:
+                return Token(value)
+            
  
             self.error()
-            
-        return Token('EOF', None)
-        
+        return Token(None)
+
     def tokenize_input(self):
         """ turn the input into a array of Tokens"""
         self.current_token = self.next_token()
@@ -185,11 +121,6 @@ class Interpreter:
         self.compile_mode = False
 
    
-    def eat_integer(self, token):
-        if token.type == 'Integer':
-            self.stack.append(token.value)
-        else:
-            raise Exception("eat_integer has received a non-integer Token")      
  
     def process_tokenized_input(self): #TODO compile mode, execute mode, comment mode
         idx = 0
@@ -198,14 +129,14 @@ class Interpreter:
             token = self.tokenized_input[idx]
             if self.execute_mode:
                 if token.type == 'Integer':
-                    self.eat_integer(token)
+                    self.stack.append(token.value)
                 
                 elif token.type == 'Comment':
                     pass
 
                 
 
-                elif token.type == 'Plus':
+                elif token.value == '+':
                     result = 0
                     
                     if len(self.stack) < 2 : raise Exception('Overflow error')
@@ -213,7 +144,7 @@ class Interpreter:
                     result += self.stack.pop()
                     self.stack.append(result)
 
-                elif token.type == 'Minus':
+                elif token.value == '+':
                     result = 0
 
                     if len(self.stack) < 2 : raise Exception('Overflow error')
@@ -221,35 +152,35 @@ class Interpreter:
                     result -= self.stack.pop()
                     self.stack.append(result)
                 
-                elif token.type == 'Multiply':
+                elif token.value == '+':
                     result = 0
                     if len(self.stack) < 2 : raise Exception('Overflow error')
                     result += self.stack.pop()
                     result *= self.stack.pop()
                     self.stack.append(result)
 
-                elif token.type == 'Divide':
+                elif token.value == '/':
                     result = 0
                     if len(self.stack) < 2 : raise Exception('Overflow error')
                     result += self.stack.pop()
                     result /= self.stack.pop()
                     self.stack.append(int(result))
 
-                elif token.type == 'Mod':
+                elif token.value == 'mod':
                     n1 = self.stack.pop()
                     n2 = self.stack.pop()
 
                     self.stack.append(int(n2 % n1))
                 
-                elif token.type == 'Print':
+                elif token.value == 'print':
                     print(self.stack)
 
-                elif token.type == 'Branch':
+                elif token.value == 'branch':
                     leap_address = self.stack.pop()
                     if leap_address-1 < 0: raise Exception("Out of program indexed branch")
                     idx = leap_address-1
 
-                elif token.type == 'Branch?':
+                elif token.value == 'branch?':
                     comparable = self.stack.pop()
                     leap_address = self.stack.pop()
 
@@ -260,18 +191,18 @@ class Interpreter:
                     else: # do nothing
                         pass
 
-                elif token.type == 'Swap':
+                elif token.value == 'swap':
                     n2 = self.stack.pop()
                     n1 = self.stack.pop()
                     self.stack.append(n1)
                     self.stack.append(n2)
 
-                elif token.type == 'Dup':
+                elif token.value == 'dup':
                     n = self.stack.pop()
                     self.stack.append(n)
                     self.stack.append(n)
                 
-                elif token.type == 'Rot':
+                elif token.value == 'rot':
                     n3 = self.stack.pop()
                     n2 = self.stack.pop()
                     n1 = self.stack.pop()
@@ -280,7 +211,7 @@ class Interpreter:
                     self.stack.append(n3)
                     self.stack.append(n1)
 
-                elif token.type == 'Over':
+                elif token.value == 'over':
                     n2 = self.stack.pop()
                     n1 = self.stack.pop()
 
@@ -288,7 +219,7 @@ class Interpreter:
                     self.stack.append(n2)
                     self.stack.append(n1)
 
-                elif token.type == 'Drop':
+                elif token.value == 'drop':
                     self.stack.pop()
                     
             
@@ -311,7 +242,7 @@ def main():
         if not text:
             continue
         interpreter = Interpreter(text)
-        #print(interpreter.tokenized_input)
+        print(interpreter.tokenized_input)
         interpreter.process_tokenized_input()
 
 if __name__ == "__main__":
