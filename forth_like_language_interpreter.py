@@ -76,8 +76,6 @@ class Lexer:
                     self.advance()
                 self.advance()
                 return Token(value + ')', 'Comment')
-
-            print(self.current_char)
             
             while self.current_char is not None and not self.current_char.isspace():
                 value += self.current_char
@@ -112,10 +110,10 @@ class Interpreter:
         self.current_token = None
         self.stack = [] # has integers/objects(perhaps in future, TODO), python's callstack used as the callstack (out of convenience)
 
+        self.user_defined_words = []
         
         
         self.execute_mode = True # starts off in execute_mode
-        self.compile_mode = False
 
    
  
@@ -141,7 +139,7 @@ class Interpreter:
                     result += self.stack.pop()
                     self.stack.append(result)
 
-                elif token.value == '+':
+                elif token.value == '-':
                     result = 0
 
                     if len(self.stack) < 2 : raise Exception('Overflow error')
@@ -149,7 +147,7 @@ class Interpreter:
                     result -= self.stack.pop()
                     self.stack.append(result)
                 
-                elif token.value == '+':
+                elif token.value == '*':
                     result = 0
                     if len(self.stack) < 2 : raise Exception('Overflow error')
                     result += self.stack.pop()
@@ -218,13 +216,27 @@ class Interpreter:
 
                 elif token.value == 'drop':
                     self.stack.pop()
+
+                elif token.value == ':':
+                    self.execute_mode = False
+                    idx += 2
+                    body = [] # list of tokens
+                    name = self.tokenized_input[idx].value
+                    while self.tokenized_input[idx].value != ';':
+                        body.append(self.tokenized_input[idx])
+                        idx += 1
                     
-            
-            if self.compile_mode:
-                pass
+                    print(body)
+                    self.user_defined_words.append(Token(name, 'UDW', body))
 
+                elif token.value in [name.value for name in self.user_defined_words]:
+                    i = 1
+                    while i <= len(token.body):
+                        self.tokenized_input.insert(idx+i, token.body[i-1])
+                    
+                    
 
-            idx += 1
+            if idx < len(self.tokenized_input): idx += 1
 
                     
 
@@ -241,6 +253,8 @@ def main():
         interpreter = Interpreter(text)
         print(interpreter.tokenized_input)
         interpreter.process_tokenized_input()
+        
+        
 
 if __name__ == "__main__":
     main()
