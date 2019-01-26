@@ -3,6 +3,8 @@
 ##### COMPILE MODE(user defined words(body is a list of tokens))
 ### test programs, while and if, fibonacci
 
+#TODO: diffrentiate Lexer from interpreter
+
 
 class Token:
     def __init__(self, type, value, body=[], flags=''):
@@ -20,14 +22,11 @@ class Token:
     def __repr__(self):
         return self.__str__()
 
-class Interpreter:
+class Lexer:
     def __init__(self, text):
         self.text = text
-        self.tokenized_input = []
         self.index = 0
-        self.current_token = None
         self.current_char = self.text[self.index]
-        self.stack = [] # has integers/objects(perhaps in future, TODO), python's callstack used as the callstack (out of convenience)
         self.operands = { # used to keep track for documentation purposes, not necessarily ever referenced
             '+' : Token('Plus', '+'),
             '-' : Token('Minus', '-'), #TODO more primites (especially stack ones)
@@ -47,8 +46,7 @@ class Interpreter:
             'mod' : Token('Mod', 'mod')
         }
 
-        self.execute_mode = True # starts off in execute_mode
-        self.compile_mode = False
+        self.tokenized_text = []
 
     def advance(self, word_length=1): #TODO: take length of command word as optional argument
         self.index += word_length
@@ -167,9 +165,26 @@ class Interpreter:
 
         while self.current_token.value != None:
             
-            self.tokenized_input.append(self.current_token)
+            self.tokenized_text.append(self.current_token)
             self.current_token = self.next_token()
 
+
+
+class Interpreter:
+    def __init__(self, text):
+        
+        self.lexer = Lexer(text)
+        self.lexer.tokenize_input()
+        self.tokenized_input = self.lexer.tokenized_text
+        self.current_token = None
+        self.stack = [] # has integers/objects(perhaps in future, TODO), python's callstack used as the callstack (out of convenience)
+
+        
+        
+        self.execute_mode = True # starts off in execute_mode
+        self.compile_mode = False
+
+   
     def eat_integer(self, token):
         if token.type == 'Integer':
             self.stack.append(token.value)
@@ -296,8 +311,7 @@ def main():
         if not text:
             continue
         interpreter = Interpreter(text)
-        interpreter.tokenize_input()
-        print(interpreter.tokenized_input)
+        #print(interpreter.tokenized_input)
         interpreter.process_tokenized_input()
 
 if __name__ == "__main__":
