@@ -1,10 +1,7 @@
 ##### GOALPOST:
 ##### MORE PRIMITIVES (Mod, swap, dup, over, rot, drop // loop)
 ##### COMPILE MODE(user defined words(body is a list of tokens))
-### test programs, while and if, fibonacci
-
-#TODO: diffrentiate Lexer from interpreter
-
+### test programs, while and if
 
 class Token:
     def __init__(self, value, type="", body=[], flags=''):
@@ -14,7 +11,7 @@ class Token:
         self.body = body # for user defined words, a list of tokens
         
     def __str__(self):
-        return '(Token, {type}, {value})'.format(
+        return '(Token, {value}, {type})'.format(
             type=self.type,
             value=repr(self.value)
         )
@@ -29,7 +26,7 @@ class Lexer:
         self.current_char = self.text[self.index]
         self.operands = { # used to keep track for documentation purposes, not necessarily ever referenced
             '+' : Token('+'),
-            '-' : Token('-'), #TODO more primites (especially stack ones)
+            '-' : Token('-'),
             '*' : Token('*'),
             '/' : Token('/'),
             'print' : Token('print'),
@@ -122,7 +119,7 @@ class Interpreter:
 
    
  
-    def process_tokenized_input(self): #TODO compile mode, execute mode, comment mode
+    def process_tokenized_input(self): #TODO compile mode, execute mode
         idx = 0
         
         while idx < len(self.tokenized_input):
