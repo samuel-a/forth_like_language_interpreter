@@ -225,9 +225,9 @@ class Interpreter:
                 
                 self.user_defined_words.append(Token(name, 'UDW', body))
 
-            elif token.value in [uwd.value for uwd in self.user_defined_words]:
-                uwd = [i for i in self.user_defined_words if i.value == token.value]
-                l1 = self.tokenized_input[:(idx+1)] + uwd[0].body
+            elif token.value in [udw.value for udw in self.user_defined_words]:
+                udw = [i for i in self.user_defined_words if i.value == token.value]
+                l1 = self.tokenized_input[:(idx+1)] + udw[0].body
                 l2 = self.tokenized_input[(idx+1):]
 
                 self.tokenized_input = l1 + l2
