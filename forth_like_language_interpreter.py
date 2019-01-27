@@ -1,7 +1,4 @@
-##### GOALPOST:
-##### MORE PRIMITIVES (Mod, swap, dup, over, rot, drop // loop)
-##### COMPILE MODE(user defined words(body is a list of tokens))
-### test programs, while and if
+
 
 class Token:
     def __init__(self, value, type="", body=[], flags=''):
@@ -122,127 +119,129 @@ class Interpreter:
         
         while idx < len(self.tokenized_input):
             token = self.tokenized_input[idx]
-            if self.execute_mode:
-                if token.type == 'Integer':
-                    self.stack.append(token.value)
+            if token.type == 'Integer':
+                self.stack.append(token.value)
+            
+            elif token.type == 'Comment':
+                pass
+
+            
+
+            elif token.value == '+':
+                result = 0
                 
-                elif token.type == 'Comment':
+                if len(self.stack) < 2 : raise Exception('Overflow error')
+                result += self.stack.pop()
+                result += self.stack.pop()
+                self.stack.append(result)
+
+            elif token.value == '-':
+                result = 0
+
+                if len(self.stack) < 2 : raise Exception('Overflow error')
+                result += self.stack.pop()
+                result -= self.stack.pop()
+                self.stack.append(result)
+            
+            elif token.value == '*':
+                result = 0
+                if len(self.stack) < 2 : raise Exception('Overflow error')
+                result += self.stack.pop()
+                result *= self.stack.pop()
+                self.stack.append(result)
+
+            elif token.value == '/':
+                result = 0
+                if len(self.stack) < 2 : raise Exception('Overflow error')
+                result += self.stack.pop()
+                result /= self.stack.pop()
+                self.stack.append(int(result))
+
+            elif token.value == 'mod':
+                n1 = self.stack.pop()
+                n2 = self.stack.pop()
+
+                self.stack.append(int(n2 % n1))
+            
+            elif token.value == 'print':
+                print(str(self.stack) + ' <top')
+
+            elif token.value == 'branch':
+                leap_address = self.stack.pop()
+                if leap_address-1 < 0: raise Exception("Out of program indexed branch")
+                idx = leap_address-1
+
+            elif token.value == 'branch?':
+                comparable = self.stack.pop()
+                leap_address = self.stack.pop()
+
+                if leap_address-1 < 0: raise Exception("Out of program indexed branch")
+
+                if comparable > 0:
+                    idx = leap_address-1
+                else: # do nothing
                     pass
 
-                
+            elif token.value == 'swap':
+                n2 = self.stack.pop()
+                n1 = self.stack.pop()
+                self.stack.append(n1)
+                self.stack.append(n2)
 
-                elif token.value == '+':
-                    result = 0
+            elif token.value == 'dup':
+                n = self.stack.pop()
+                self.stack.append(n)
+                self.stack.append(n)
+            
+            elif token.value == 'rot':
+                n3 = self.stack.pop()
+                n2 = self.stack.pop()
+                n1 = self.stack.pop()
+
+                self.stack.append(n2)
+                self.stack.append(n3)
+                self.stack.append(n1)
+
+            elif token.value == 'over':
+                n2 = self.stack.pop()
+                n1 = self.stack.pop()
+
+                self.stack.append(n1)
+                self.stack.append(n2)
+                self.stack.append(n1)
+
+            elif token.value == 'drop':
+                self.stack.pop()
+
+            elif token.value == ':': 
+                idx += 1
+                body = [] # list of tokens
+                name = self.tokenized_input[idx].value
+                idx += 1
+                while self.tokenized_input[idx].value != ';':
+                    body.append(self.tokenized_input[idx])
                     
-                    if len(self.stack) < 2 : raise Exception('Overflow error')
-                    result += self.stack.pop()
-                    result += self.stack.pop()
-                    self.stack.append(result)
-
-                elif token.value == '-':
-                    result = 0
-
-                    if len(self.stack) < 2 : raise Exception('Overflow error')
-                    result += self.stack.pop()
-                    result -= self.stack.pop()
-                    self.stack.append(result)
+                    idx += 1
                 
-                elif token.value == '*':
-                    result = 0
-                    if len(self.stack) < 2 : raise Exception('Overflow error')
-                    result += self.stack.pop()
-                    result *= self.stack.pop()
-                    self.stack.append(result)
+                self.user_defined_words.append(Token(name, 'UDW', body))
 
-                elif token.value == '/':
-                    result = 0
-                    if len(self.stack) < 2 : raise Exception('Overflow error')
-                    result += self.stack.pop()
-                    result /= self.stack.pop()
-                    self.stack.append(int(result))
+            elif token.value in [uwd.value for uwd in self.user_defined_words]:
+                uwd = [i for i in self.user_defined_words if i.value == token.value]
+                l1 = self.tokenized_input[:(idx+1)] + uwd[0].body
+                l2 = self.tokenized_input[(idx+1):]
 
-                elif token.value == 'mod':
-                    n1 = self.stack.pop()
-                    n2 = self.stack.pop()
+                self.tokenized_input = l1 + l2
 
-                    self.stack.append(int(n2 % n1))
-                
-                elif token.value == 'print':
-                    print(self.stack)
 
-                elif token.value == 'branch':
-                    leap_address = self.stack.pop()
-                    if leap_address-1 < 0: raise Exception("Out of program indexed branch")
-                    idx = leap_address-1
 
-                elif token.value == 'branch?':
-                    comparable = self.stack.pop()
-                    leap_address = self.stack.pop()
-
-                    if leap_address-1 < 0: raise Exception("Out of program indexed branch")
-
-                    if comparable > 0:
-                        idx = leap_address-1
-                    else: # do nothing
-                        pass
-
-                elif token.value == 'swap':
-                    n2 = self.stack.pop()
-                    n1 = self.stack.pop()
-                    self.stack.append(n1)
-                    self.stack.append(n2)
-
-                elif token.value == 'dup':
-                    n = self.stack.pop()
-                    self.stack.append(n)
-                    self.stack.append(n)
-                
-                elif token.value == 'rot':
-                    n3 = self.stack.pop()
-                    n2 = self.stack.pop()
-                    n1 = self.stack.pop()
-
-                    self.stack.append(n2)
-                    self.stack.append(n3)
-                    self.stack.append(n1)
-
-                elif token.value == 'over':
-                    n2 = self.stack.pop()
-                    n1 = self.stack.pop()
-
-                    self.stack.append(n1)
-                    self.stack.append(n2)
-                    self.stack.append(n1)
-
-                elif token.value == 'drop':
-                    self.stack.pop()
-
-                elif token.value == ':':
-                    self.execute_mode = False
-                    idx += 2
-                    body = [] # list of tokens
-                    name = self.tokenized_input[idx].value
-                    while self.tokenized_input[idx].value != ';':
-                        body.append(self.tokenized_input[idx])
-                        idx += 1
                     
-                    print(body)
-                    self.user_defined_words.append(Token(name, 'UDW', body))
-
-                elif token.value in [name.value for name in self.user_defined_words]:
-                    i = 1
-                    while i <= len(token.body):
-                        self.tokenized_input.insert(idx+i, token.body[i-1])
-                    
-                    
-
             if idx < len(self.tokenized_input): idx += 1
 
                     
 
 
 def main():
-    print("""This is a partial implementation of an intentionally\nunspecified and possibly non-existent standard for a Forth-like language.\n\nFeature list:\n-Primitives\n-Branch logic\n-User-defined words\n-Comments""")
+    print("""This is a partial implementation of an intentionally\nunspecified and possibly non-existent standard for a Forth-like language.\n\nFeature list:\n-Primitives\n-Branch logic\n-User-defined words(macros)\n-Comments""")
     while True:
         try:
             text = input('> ')
@@ -251,7 +250,6 @@ def main():
         if not text:
             continue
         interpreter = Interpreter(text)
-        print(interpreter.tokenized_input)
         interpreter.process_tokenized_input()
         
         
