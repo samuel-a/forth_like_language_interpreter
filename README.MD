@@ -17,3 +17,13 @@ no dependencies
 \> : A 30 ; : B 70 ; A B (this is a comment) A B + print
 
 [30, 70, 100] <top
+
+\> : IF 2 branch? 0 1 ; 1 IF print
+
+[1] <top
+
+
+
+## Problems/negative features
+* no negative numbers
+* branch logic fuzzy, comments affect branch logic

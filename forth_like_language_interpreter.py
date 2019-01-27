@@ -167,18 +167,15 @@ class Interpreter:
                 print(str(self.stack) + ' <top')
 
             elif token.value == 'branch':
-                leap_address = self.stack.pop()
-                if leap_address-1 < 0: raise Exception("Out of program indexed branch")
-                idx = leap_address-1
+                words_to_jump = max(self.stack.pop(), 1)
+                idx += words_to_jump
 
             elif token.value == 'branch?':
+                words_to_jump = max(self.stack.pop(), 1)
                 comparable = self.stack.pop()
-                leap_address = self.stack.pop()
-
-                if leap_address-1 < 0: raise Exception("Out of program indexed branch")
 
                 if comparable > 0:
-                    idx = leap_address-1
+                    idx += words_to_jump
                 else: # do nothing
                     pass
 
