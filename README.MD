@@ -30,3 +30,4 @@ no dependencies
 ## Problems/negative features
 * no negative number pushing, except with ` : neg 0 swap - ; `
 * branch logic fuzzy, comments affect branch logic
+* macros permantently lengthen the program code 
