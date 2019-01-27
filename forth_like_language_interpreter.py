@@ -65,15 +65,13 @@ class Lexer:
                 self.jump_whitespace()
                 continue
 
-            value = ""
-
+            value = ''
             if self.current_char == '(':
                 while not self.current_char == ')':
-                    value += self.current_char
                     self.advance()
                 self.advance()
-                return Token(value + ')', 'Comment')
-            
+                continue
+
             while self.current_char is not None and not self.current_char.isspace():
                 value += self.current_char
                 self.advance()
@@ -93,8 +91,7 @@ class Lexer:
 
         while self.current_token.value != None:
             
-            if  self.current_token.type != 'Comment':
-                self.tokenized_text.append(self.current_token)
+            self.tokenized_text.append(self.current_token)
             self.current_token = self.next_token()
 
 
@@ -248,6 +245,7 @@ def main():
         if not text:
             continue
         interpreter = Interpreter(text)
+        print(interpreter.tokenized_input)
         interpreter.process_tokenized_input()
         
         
