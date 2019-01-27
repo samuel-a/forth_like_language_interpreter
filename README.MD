@@ -1,10 +1,10 @@
-## A limited-feature interpreter for an imaginary forth-like language
+# A limited-feature interpreter for an imaginary forth-like language
 
 26.01.2019
 
 no dependencies
 
-# Example programs
+## Example programs
 
 \> 1 2 + 10 * 6 / print
 
