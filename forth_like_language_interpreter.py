@@ -165,16 +165,16 @@ class Interpreter:
                 print(str(self.stack) + ' <top')
 
             elif token.value == 'branch':
-                words_to_jump = max(self.stack.pop(), 1)
+                words_to_jump = self.stack.pop()
                 idx += words_to_jump
 
             elif token.value == 'branch?':
-                words_to_jump = max(self.stack.pop(), 1)
+                words_to_jump = self.stack.pop()
                 comparable = self.stack.pop()
 
                 if comparable > 0:
                     idx += words_to_jump
-                else: # do nothing
+                else: 
                     pass
 
             elif token.value == 'swap':
