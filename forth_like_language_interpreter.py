@@ -93,7 +93,8 @@ class Lexer:
 
         while self.current_token.value != None:
             
-            self.tokenized_text.append(self.current_token)
+            if  self.current_token.type != 'Comment':
+                self.tokenized_text.append(self.current_token)
             self.current_token = self.next_token()
 
 
@@ -195,9 +196,9 @@ class Interpreter:
                 n2 = self.stack.pop()
                 n1 = self.stack.pop()
 
-                self.stack.append(n2)
                 self.stack.append(n3)
                 self.stack.append(n1)
+                self.stack.append(n2)
 
             elif token.value == 'over':
                 n2 = self.stack.pop()
