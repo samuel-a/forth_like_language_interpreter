@@ -114,7 +114,7 @@ class Interpreter:
 
    
  
-    def process_tokenized_input(self): #TODO compile mode, execute mode
+    def process_tokenized_input(self):
         idx = 0
         
         while idx < len(self.tokenized_input):
@@ -153,9 +153,9 @@ class Interpreter:
             elif token.value == '/':
                 result = 0
                 if len(self.stack) < 2 : raise Exception('Overflow error')
-                result += self.stack.pop()
-                result /= self.stack.pop()
-                self.stack.append(int(result))
+                n1 = self.stack.pop()
+                n2 = self.stack.pop()
+                self.stack.append(int(n2 / n1))
 
             elif token.value == 'mod':
                 n1 = self.stack.pop()
