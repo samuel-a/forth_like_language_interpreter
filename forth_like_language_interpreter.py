@@ -180,8 +180,8 @@ class Interpreter:
             elif token.value == 'swap':
                 n2 = self.stack.pop()
                 n1 = self.stack.pop()
-                self.stack.append(n1)
                 self.stack.append(n2)
+                self.stack.append(n1)
 
             elif token.value == 'dup':
                 n = self.stack.pop()
